@@ -115,6 +115,11 @@ func (m *MatrixBool) ToTensor() tensor.Tensor {
 	return tensor.NewDense(tensor.Bool, []int{m.Rows(), m.Columns()}, tensor.WithBacking(m.data))
 }
 
+// Type is the type of values in MatrixFloat64
+func (m *MatrixBool) Type() string {
+	return sam.BoolType
+}
+
 // UpdateValue will update the value found at the provided row and column
 // arguments.
 // If the row or column are out of bounds for the matrix then the proper

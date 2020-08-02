@@ -18,13 +18,12 @@ import (
 	"math"
 	"math/rand"
 
-	"gonum.org/v1/gonum/mat"
-
 	"github.com/humilityai/sam"
+	"gonum.org/v1/gonum/mat"
 	"gorgonia.org/tensor"
 )
 
-// MatrixFloat64 is backed by a single array.
+// MatrixFloat64 is backed by a single float64 array.
 type MatrixFloat64 struct {
 	data    sam.SliceFloat64
 	columns int
@@ -50,6 +49,11 @@ func (m *MatrixFloat64) AddRow(row []float64) error {
 	m.data = append(m.data, row...)
 
 	return nil
+}
+
+// Type is the type of values in MatrixFloat64
+func (m *MatrixFloat64) Type() string {
+	return sam.Float64Type
 }
 
 // AppendColumn will add a column to the matrix and place
@@ -100,14 +104,14 @@ func (m *MatrixFloat64) GetColumnData(column int) (data sam.SliceFloat64, err er
 }
 
 // GetRow ...
-func (m *MatrixFloat64) GetRow(row int) (sam.SliceFloat64, error) {
+func (m *MatrixFloat64) GetRow(row int) (sam.Slice, error) {
 	err := m.checkRowAndColumnBounds(row, 0)
 	if err != nil {
-		return []float64{}, err
+		return sam.SliceFloat64{}, err
 	}
 	start := row * m.columns
 
-	return m.data[start : start+m.columns], nil
+	return sam.SliceFloat64(m.data[start : start+m.columns]), nil
 }
 
 // GetValue will return the float64 value found at the row and column
@@ -120,6 +124,15 @@ func (m *MatrixFloat64) GetValue(row, column int) (float64, error) {
 	}
 
 	return m.data[row*m.columns+column], nil
+}
+
+// Iterator will return an object that allows row
+// iteration of the matrix.
+func (m *MatrixFloat64) Iterator() *Iterator {
+	return &Iterator{
+		Matrix: m,
+		row:    -1,
+	}
 }
 
 // MaxSum will return the row with the greatest sum
