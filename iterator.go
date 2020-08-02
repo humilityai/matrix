@@ -20,23 +20,14 @@ import (
 
 // Func is the basic function type for
 // modifying the values of a matrix.
-type Func func(float64) float64
+type Func func(interface{}) interface{}
 
 // Iterator is an object that can
 // be used to traverse the rows of a matrix
 // in order exactly once.
 type Iterator struct {
-	*MatrixFloat64
+	Matrix
 	row int
-}
-
-// Iterator will return an object that allows row
-// iteration of the matrix.
-func (m *MatrixFloat64) Iterator() *Iterator {
-	return &Iterator{
-		MatrixFloat64: m,
-		row:           -1,
-	}
 }
 
 // Next will set the iterator to return the next row.
@@ -53,14 +44,14 @@ func (i *Iterator) Next() bool {
 }
 
 // Row will return the data of the current row for the iterator.
-func (i *Iterator) Row() sam.SliceFloat64 {
+func (i *Iterator) Row() sam.Slice {
 	row := i.row
 	if row < 0 {
 		row = 0
 	}
 
-	start := row * i.columns
-	return i.data[start : start+i.columns]
+	r, _ := i.GetRow(row)
+	return r
 }
 
 // RowIndices ...
@@ -71,8 +62,8 @@ func (i *Iterator) RowIndices() sam.SliceInt {
 	}
 
 	var indices sam.SliceInt
-	start := row * i.columns
-	for j := start; j < start+i.columns; j++ {
+	start := row * i.Columns()
+	for j := start; j < start+i.Columns(); j++ {
 		indices = append(indices, j)
 	}
 
@@ -85,23 +76,21 @@ func (i *Iterator) RowIndices() sam.SliceInt {
 // and before the Next() method has been called
 func (i *Iterator) ApplyToMatrix(f Func) {
 	for i.Next() {
-		row := i.data[i.row*i.columns : i.row*i.columns+i.columns]
-		for i, v := range row {
-			row[i] = f(v)
+		row := i.Row()
+		for i := 0; i < row.Len(); i++ {
+			row.Set(i, f(row.Get(i)))
 		}
 	}
 }
 
 // ApplyToColumns can be used to apply a function to the values
 // of one or more columns in the matrix.
-func (i *Iterator) ApplyToColumns(f Func, columns []int) {
+func (i *Iterator) ApplyToColumns(f Func, columns sam.SliceInt) {
 	for i.Next() {
-		row := i.data[i.row*i.columns : i.row*i.columns+i.columns]
-		for i, v := range row {
-			for _, column := range columns {
-				if i == column {
-					row[i] = f(v)
-				}
+		row := i.Row()
+		for i := 0; i < row.Len(); i++ {
+			if columns.Contains(i) {
+				row.Set(i, f(row.Get(i)))
 			}
 		}
 	}
