@@ -1,4 +1,4 @@
-// Copyright 2020 Hummility AI Incorporated, All Rights Reserved.
+// Copyright 2020 Humility AI Incorporated, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,6 +47,26 @@ func (m *MatrixBool) AddRow(row sam.SliceBool) error {
 	return nil
 }
 
+// AppendColumn will add a column to the matrix and place
+// the specified default value into each row's column value.
+func (m *MatrixBool) AppendColumn(defaultValue bool) {
+	rows := m.Rows()
+	data := make(sam.SliceBool, len(m.data)+rows, len(m.data)+rows)
+
+	iter := m.Iterator()
+	for iter.Next() {
+		indices := iter.RowIndices()
+		for _, index := range indices {
+			data[index] = m.data[index]
+		}
+		lastIndex := indices[len(indices)-1]
+		data[lastIndex+1] = defaultValue
+	}
+
+	m.columns++
+	m.data = data
+}
+
 // Columns will return the number of columns found
 // in the matrix.
 func (m *MatrixBool) Columns() int {
@@ -56,7 +76,7 @@ func (m *MatrixBool) Columns() int {
 // Dimensions returns the number of rows and columns
 // in the matrix: (rows, columns).
 func (m *MatrixBool) Dimensions() (int, int) {
-	return len(m.data), m.columns
+	return m.Rows(), m.columns
 }
 
 // GetColumnData will return a float64 array that contains all the data points
@@ -75,14 +95,14 @@ func (m *MatrixBool) GetColumnData(column int) (data sam.SliceBool, err error) {
 }
 
 // GetRow ...
-func (m *MatrixBool) GetRow(row int) (sam.SliceBool, error) {
+func (m *MatrixBool) GetRow(row int) (sam.Slice, error) {
 	err := m.checkRowAndColumnBounds(row, 0)
 	if err != nil {
-		return []bool{}, err
+		return sam.SliceBool{}, err
 	}
 	start := row * m.columns
 
-	return m.data[start : start+m.columns], nil
+	return sam.SliceBool(m.data[start : start+m.columns]), nil
 }
 
 // GetValue will return the boolean value found at the row and column
@@ -95,6 +115,15 @@ func (m *MatrixBool) GetValue(row, column int) (bool, error) {
 	}
 
 	return m.data[row*m.columns+column], nil
+}
+
+// Iterator will return an object that allows row
+// iteration of the matrix.
+func (m *MatrixBool) Iterator() *Iterator {
+	return &Iterator{
+		Matrix: m,
+		row:    -1,
+	}
 }
 
 // Rows will return the number of rows found

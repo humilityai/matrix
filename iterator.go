@@ -1,4 +1,4 @@
-// Copyright 2020 Hummility AI Incorporated, All Rights Reserved.
+// Copyright 2020 Humility AI Incorporated, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,11 +36,22 @@ type Iterator struct {
 func (i *Iterator) Next() bool {
 	i.row++
 
-	if i.row > i.Rows() {
+	if i.row >= i.Rows() {
 		return false
 	}
 
 	return true
+}
+
+// Index returns the current index of the
+// iterator object.
+func (i *Iterator) Index() int {
+	row := i.row
+	if i.row < 0 {
+		row = 0
+	}
+
+	return row
 }
 
 // Row will return the data of the current row for the iterator.

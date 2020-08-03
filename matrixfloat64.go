@@ -1,4 +1,4 @@
-// Copyright 2020 Hummility AI Incorporated, All Rights Reserved.
+// Copyright 2020 Humility AI Incorporated, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ func (m *MatrixFloat64) Columns() int {
 // Dimensions returns the number of rows and columns
 // in the matrix: (rows, columns).
 func (m *MatrixFloat64) Dimensions() (int, int) {
-	return len(m.data), m.columns
+	return m.Rows(), m.columns
 }
 
 // GetColumnData will return a float64 array that contains all the data points
