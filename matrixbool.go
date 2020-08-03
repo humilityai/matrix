@@ -126,6 +126,12 @@ func (m *MatrixBool) Iterator() *Iterator {
 	}
 }
 
+// Len is a standard method that satisfies
+// many common interfaces.
+func (m *MatrixBool) Len() int {
+	return m.Rows()
+}
+
 // Rows will return the number of rows found
 // in the matrix.
 func (m *MatrixBool) Rows() int {

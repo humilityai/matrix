@@ -192,6 +192,18 @@ func (m *MatrixFloat64) Mode() sam.SliceFloat64 {
 	return m.data[k : k+m.columns]
 }
 
+// Len is a standard method that satisfies
+// many common interfaces.
+func (m *MatrixFloat64) Len() int {
+	return m.Rows()
+}
+
+// Values is a wrapper for GetRow.
+func (m *MatrixFloat64) Values(i int) []float64 {
+	r, _ := m.GetRow(i)
+	return r.(sam.SliceFloat64)
+}
+
 // NonZeroRows will return a new matrix that contains only the non-zero
 // rows of the original matrix.
 func (m *MatrixFloat64) NonZeroRows() (*MatrixFloat64, error) {
