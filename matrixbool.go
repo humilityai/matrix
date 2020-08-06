@@ -132,6 +132,19 @@ func (m *MatrixBool) Len() int {
 	return m.Rows()
 }
 
+// RemoveRow will delete the row from the matrix.
+func (m *MatrixBool) RemoveRow(row int) error {
+	if row < 0 || row > m.Rows() {
+		return ErrRowIndex
+	}
+
+	start := row * m.columns
+	end := start + m.columns
+	m.data = append(m.data[:start], m.data[end:]...)
+
+	return nil
+}
+
 // Rows will return the number of rows found
 // in the matrix.
 func (m *MatrixBool) Rows() int {

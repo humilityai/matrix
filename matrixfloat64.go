@@ -51,6 +51,19 @@ func (m *MatrixFloat64) AddRow(row []float64) error {
 	return nil
 }
 
+// RemoveRow will delete the row from the matrix.
+func (m *MatrixFloat64) RemoveRow(row int) error {
+	if row < 0 || row > m.Rows() {
+		return ErrRowIndex
+	}
+
+	start := row * m.columns
+	end := start + m.columns
+	m.data = append(m.data[:start], m.data[end:]...)
+
+	return nil
+}
+
 // Type is the type of values in MatrixFloat64
 func (m *MatrixFloat64) Type() string {
 	return sam.Float64Type
@@ -103,7 +116,7 @@ func (m *MatrixFloat64) GetColumnData(column int) (data sam.SliceFloat64, err er
 	return
 }
 
-// GetRow ...
+// GetRow will retrieve the data at the given row index.
 func (m *MatrixFloat64) GetRow(row int) (sam.Slice, error) {
 	err := m.checkRowAndColumnBounds(row, 0)
 	if err != nil {
@@ -290,8 +303,7 @@ func (m *MatrixFloat64) UpdateValue(value float64, row, column int) error {
 }
 
 func (m *MatrixFloat64) checkRowAndColumnBounds(row, column int) error {
-	rows := len(m.data) / m.columns
-	if row > rows || row < 0 {
+	if row > m.Rows() || row < 0 {
 		return ErrRowIndex
 	} else if column < 0 || column > m.columns {
 		return ErrColumnIndex
