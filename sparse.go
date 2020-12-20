@@ -18,12 +18,19 @@ type Sparse struct {
 	Data map[int]map[int]float64 `json:"data"`
 }
 
-type value struct {
+type rowValue struct {
+	Row   int
+	Value float64
+}
+
+type rowValues []rowValue
+
+type columnValue struct {
 	Column int
 	Value  float64
 }
 
-type values []value
+type columnValues []columnValue
 
 // NewSparse will return a `*Sparse` matrix.
 func NewSparse() *Sparse {
@@ -81,17 +88,34 @@ func (s *Sparse) Increment(i, j int) {
 	row[j]++
 }
 
+// GetColumn will return a set of row value {row, value} pairs
+// for the specified column
+func (s *Sparse) GetColumn(i int) rowValues {
+	var v rowValues
+	for row, columns := range s.Data {
+		val, ok := columns[i]
+		if ok {
+			v = append(v, rowValue{
+				Row:   row,
+				Value: val,
+			})
+		}
+	}
+
+	return v
+}
+
 // GetRow will return the list of values found at row `i`.
 // It will return a list of {column, value} pairs.
-func (s *Sparse) GetRow(i int) (values, error) {
-	var v values
+func (s *Sparse) GetRow(i int) (columnValues, error) {
+	var v columnValues
 	row, ok := s.Data[i]
 	if !ok {
 		return v, ErrRowIndex
 	}
 
 	for column, val := range row {
-		v = append(v, value{
+		v = append(v, columnValue{
 			Column: column,
 			Value:  val,
 		})
@@ -106,25 +130,52 @@ func (s *Sparse) Type() string {
 }
 
 // Equal ...
-func (v values) Equal(input interface{}) bool { return false }
+func (v columnValues) Equal(input interface{}) bool { return false }
 
 // Get ...
-func (v values) Get(int) interface{} { return nil }
+func (v columnValues) Get(int) interface{} { return nil }
 
 // Len ...
-func (v values) Len() int { return len(v) }
+func (v columnValues) Len() int { return len(v) }
 
 // Set ...
-func (v values) Set(int, interface{}) {}
+func (v columnValues) Set(int, interface{}) {}
 
 // Type ...
-func (v values) Type() string { return "" }
+func (v columnValues) Type() string { return "" }
 
 // Subslice ...
-func (v values) Subslice(start, end int) sam.Slice { return v[start:end] }
+func (v columnValues) Subslice(start, end int) sam.Slice { return v[start:end] }
 
 // Sum will return the sum of values for a row in a Sparse matrix.
-func (v values) Sum() float64 {
+func (v columnValues) Sum() float64 {
+	var sum float64
+	for _, val := range v {
+		sum += val.Value
+	}
+	return sum
+}
+
+// Equal ...
+func (v rowValues) Equal(input interface{}) bool { return false }
+
+// Get ...
+func (v rowValues) Get(int) interface{} { return nil }
+
+// Len ...
+func (v rowValues) Len() int { return len(v) }
+
+// Set ...
+func (v rowValues) Set(int, interface{}) {}
+
+// Type ...
+func (v rowValues) Type() string { return "" }
+
+// Subslice ...
+func (v rowValues) Subslice(start, end int) sam.Slice { return v[start:end] }
+
+// Sum will return the sum of values for a row in a Sparse matrix.
+func (v rowValues) Sum() float64 {
 	var sum float64
 	for _, val := range v {
 		sum += val.Value
